@@ -34,7 +34,7 @@ class FERPlusParameters():
     '''
     FER+ reader parameters
     '''
-    def __init__(self, target_size, width, height, training_mode = "majority", determinisitc = False, shuffle = True):
+    def __init__(self, target_size, width, height, training_mode="majority", determinisitc=False, shuffle=True):
         self.target_size   = target_size
         self.width         = width
         self.height        = height
@@ -89,7 +89,7 @@ class FERPlusReader(object):
         self.batch_start       = 0
         self.indices           = 0
 
-        self.A, self.A_pinv = imgu.compute_norm_mat(self.width, self.height)
+        self.A = imgu.compute_norm_mat(self.width, self.height)
         
     def has_more(self):
         '''
@@ -134,7 +134,7 @@ class FERPlusReader(object):
                                                self.max_angle, 
                                                self.max_skew, 
                                                self.do_flip)
-            final_image = imgu.preproc_img(distorted_image, A=self.A, A_pinv=self.A_pinv)
+            final_image = imgu.preproc_img(distorted_image)
 
             inputs[idx-self.batch_start]    = final_image
             targets[idx-self.batch_start,:] = self._process_target(self.data[index][2])

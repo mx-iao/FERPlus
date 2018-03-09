@@ -17,28 +17,32 @@ def compute_norm_mat(base_width, base_height):
     X      = X.flatten()
     Y      = Y.flatten() 
     A      = np.array([X*0+1, X, Y]).T 
-    A_pinv = np.linalg.pinv(A)
-    return A, A_pinv
+    return A
 
-def preproc_img(img, A, A_pinv):
-    # compute image histogram 
-    img_flat = img.flatten()
-    img_hist = np.bincount(img_flat, minlength = 256)
+def preproc_img(img, A=None):
+    if A == None:
+        return (img - 127.5) / 127.5
+    else:
+        A_pinv = np.linalg.pinv(A)
 
-    # cumulative distribution function 
-    cdf = img_hist.cumsum() 
-    cdf = cdf * (2.0 / cdf[-1]) - 1.0 # normalize 
+        # compute image histogram 
+        img_flat = img.flatten()
+        img_hist = np.bincount(img_flat, minlength = 256)
 
-    # histogram equalization 
-    img_eq = cdf[img_flat] 
+        # cumulative distribution function 
+        cdf = img_hist.cumsum() 
+        cdf = cdf * (2.0 / cdf[-1]) - 1.0 # normalize 
 
-    diff = img_eq - np.dot(A, np.dot(A_pinv, img_eq))
+        # histogram equalization 
+        img_eq = cdf[img_flat] 
 
-    # after plane fitting, the mean of diff is already 0 
-    std = np.sqrt(np.dot(diff,diff)/diff.size)
-    if std > 1e-6: 
-        diff = diff/std
-    return diff.reshape(img.shape)
+        diff = img_eq - np.dot(A, np.dot(A_pinv, img_eq))
+
+        # after plane fitting, the mean of diff is already 0 
+        std = np.sqrt(np.dot(diff,diff)/diff.size)
+        if std > 1e-6: 
+            diff = diff/std
+        return diff.reshape(img.shape)
 
 def distort_img(img, roi, out_width, out_height, max_shift, max_scale, max_angle, max_skew, flip=True): 
     shift_y = out_height*max_shift*rnd.uniform(-1.0,1.0)
